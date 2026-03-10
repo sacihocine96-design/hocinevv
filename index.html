@@ -214,21 +214,14 @@
         </div>
         
     </div>
-
-    <!-- التذييل الاحترافي (Footer) -->
-    <footer class="w-full text-center py-6 text-xs text-gray-400 font-medium">
-        <p>© 2026 Belaggoun Hebatallah.</p>
-        <p class="mt-1">Étudiante en Biologie & Assistante en Pharmacie.</p>
-    </footer>
-
-    <script>
+    
      // برمجة القفل السري
         function checkPin() {
             const pin = document.getElementById('pin-input').value;
             const errorMsg = document.getElementById('error-msg');
             const loginBox = document.getElementById('login-box');
             
-            if(pin === "2026") {
+            if(pin === "2006") {
                 document.getElementById('lock-screen').style.opacity = '0';
                 setTimeout(() => {
                     document.getElementById('lock-screen').style.visibility = 'hidden';
@@ -249,6 +242,13 @@
             if (event.key === "Enter") {
                 event.preventDefault();
                 checkPin();
+
+    <!-- التذييل الاحترافي (Footer) -->
+    <footer class="w-full text-center py-6 text-xs text-gray-400 font-medium">
+        <p>© 2026 Belaggoun Hebatallah.</p>
+        <p class="mt-1">Étudiante en Biologie & Assistante en Pharmacie.</p>
+    </footer>
+    <script>
 
         // دالة لقلب البطاقة عند النقر
         function toggleFlip() {
