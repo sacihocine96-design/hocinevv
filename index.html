@@ -1,765 +1,632 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>دفء الغرز | متجر الكروشيه</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap"
-      rel="stylesheet"
-    />
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              brand: {
-                cream: '#fff8f2',
-                sand: '#f2e6dc',
-                rose: '#d9968a',
-                mocha: '#6f4e37',
-                olive: '#728c69',
-                dark: '#2e241f'
-              }
-            },
-            fontFamily: {
-              cairo: ['Cairo', 'sans-serif']
-            },
-            boxShadow: {
-              soft: '0 18px 40px rgba(111, 78, 55, 0.12)'
-            }
-          }
-        }
-      };
-    </script>
-  </head>
-  <body class="bg-brand-cream font-cairo text-brand-dark">
-    <header class="bg-gradient-to-l from-brand-sand via-brand-cream to-white">
-      <nav class="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-8">
-        <a href="#home" class="text-2xl font-extrabold text-brand-mocha">دفء الغرز</a>
-        <div class="hidden gap-6 text-sm font-bold text-brand-mocha md:flex">
-          <a href="#categories" class="hover:text-brand-rose">الأقسام</a>
-          <a href="#products" class="hover:text-brand-rose">المتوفر الآن</a>
-          <a href="#custom" class="hover:text-brand-rose">طلب خاص</a>
-          <a href="#contact" class="hover:text-brand-rose">تواصل</a>
+import React, { useState, useEffect } from 'react';
+
+// =========================================================================
+// 🚀 إعدادات FIREBASE (قاعدة البيانات السحابية)
+// =========================================================================
+/* // 1. قم بتثبيت مكتبة فايربيس في مشروعك: npm install firebase
+import { initializeApp } from "firebase/app";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "firebase/firestore";
+
+const firebaseConfig = {
+  apiKey: "ضعي_مفتاح_API_الخاص_بك_هنا",
+  authDomain: "your-project.firebaseapp.com",
+  projectId: "your-project-id",
+  storageBucket: "your-project.appspot.com",
+  messagingSenderId: "123456789",
+  appId: "1:123456789:web:abcdef123456"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app); 
+
+// --- دوال جاهزة لحفظ الطلبات في فايربيس ---
+const saveOrderToFirebase = async (orderData) => {
+  try {
+    const docRef = await addDoc(collection(db, "orders"), orderData);
+    console.log("Document written with ID: ", docRef.id);
+    return true;
+  } catch (e) {
+    console.error("Error adding document: ", e);
+    return false;
+  }
+};
+*/
+// =========================================================================
+
+
+// --- الألوان المتغيرة بناءً على التصميم المرفق ---
+const colors = {
+  primary: '#44674d',
+  primaryContainer: '#c5eccc',
+  secondary: '#7e572e',
+  secondaryContainer: '#ffdcbd',
+  tertiary: '#7f535c',
+  tertiaryContainer: '#fcc3ce',
+  background: '#fdf8f5',
+  surface: '#fdf8f5',
+  surfaceLow: '#f8f3ef',
+  surfaceHigh: '#ece7e3',
+  surfaceHighest: '#e7e2dd',
+  onSurface: '#34322f',
+  onSurfaceVariant: '#615f5b',
+  white: '#ffffff'
+};
+
+// === البيانات الافتراضية ===
+const defaultData = {
+  categories: [
+    { id: 'amigurumi', name: 'الأميغورومي', desc: 'دمى محشوة يدوياً تفيض باللطف', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDbTxQiXXo8BTfZLacMPEuypIjchKECBjimG760R9-k9kHrNt7omcupi9FZ5ahCf4m3nt7thcdVIzYpFy-B-gwd0ZKYpMfrCNDFOjGMDabhSyqUGfNFFq3tocWKM5JNwNXByn_cEYluS29LQ32a7KwwDTxdU3NkCSkKAheH_LX5noG-3fP5ceF1Df_zIzqSEaWxQuQdQdheoyPMMtjmAVPvcN9AjtAqKsK83SWh3sQleEnjpDcKAkfJ0JgvVD1XoZA8O_lOetdkXmIk' },
+    { id: 'accessories', name: 'الإكسسوارات', desc: 'أناقة يومية', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBfG0_KcF5x0xuJ-Y6MgLPD6byJ4yxZ5-TrXb-sDMqHvHLSo5mbW9hifFYTZjrVdCNdR1-dWt8YAdq_7O6ZVRr3-8oY7UF37gd1zp07CY2cWCejMxbvMOmnyfVxfIo48_0FwKWGky4eVqqidVH0k2vbtnNZKh7cBqYZYaTZS38e5X06oyQT3tuXu5H6SvSmpr57wEbIWVoWwvIsvs3_z_ho4k_Ph03Y8Ls4gfOr_yYllE0uSlsM8Ev8xtS01X8s-qTwmsH8EBFoxC6J' },
+    { id: 'clothes', name: 'الملابس', desc: 'دفء الصوف', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC3z187EtK6tWYiXJj35pYSVZxDG6h4iEXQaKqDSPNKbA0JCNc6N9hPIrow585z5pa8tRWU_TYcO7X1y4LveJYgPA4y1brrFWQ8d3pEvEN-mMHVCl17ZqFiT8nDjU_3F-ex6iOGd2JsFdBPRVsr6xr4MzizyBWirymGTI3NY4zMAX8uChbMUNn8jR4PoJTK8hbawzCZBTwBOZf2TtCQcJku5npQxYeGpNV_2u0QMTznimEjtPpg_Gc_FC4cXRR-zWNvsK8xqTYXDGB3' },
+    { id: 'decor', name: 'ديكور المنزل', desc: 'لمسات دافئة لكل زاوية', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDbReoCW_2G46itkWtcnvgwRpPxd4pCvoIF4bC96A-eVAspC_AZ5v8wTRyyiubqwGs5TGT7YQ8h9j7mIA_NebsDgNY12qOMtWEQ5Zqmcr4IF10NxqpHjpPFp0YXj8heI4Vu6tc2V-6EF4SSZRdTj8m6G_dZ5zW2l5pWfoW9fKj7OKggLeSdmUs0yUw3ufMGxWfDQXS-g65OXBQJ1iHDVCG3SKovbnKCdLXVU9IU7JJPwiwNq7nVXkys6wx-XdBdTXPR5XROnY3aBRxU' }
+  ],
+  products: [
+    { id: 1, categoryId: 'amigurumi', name: 'دمية الأرنب "نونو"', price: '150 ر.س', image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAv3syqMxfmdxXSpRL8-6kt2jDDz8d5j0yctq2nW2xlabTNU3-T7HQ7jXmqTlFSdrH-lTP2nnUhTrvwsU8k_9IaIoDQwLAbnOwFo_rrv6KXkDMoWASM24etuFWmNAWQittJ6M4UW1movQR0FU2hsRUmNp9BzzTharNkRfV6zSi1Pv5X9FqBt-VhbpSPVJtBGq8mqGDyKS67qqv8n6UEO-4rAJVkQax6hhKaNKjVRl9Ss-OVhCPQ2T8AeQq0OxeFFYqd212AQn_aaiAq' },
+    { id: 2, categoryId: 'accessories', name: 'حقيبة اليد البوهيمية', price: '275 ر.س', image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBW2eEmp0H8qW07LYpB9ytL93fVfhtFBvfHVIVFjhYfDvny5Cf8SR61dyZnkdp2JHrvvQ1829-dprVLpEWpJ_rUUhZEvOPYdeonYsfNBQCkNtb6JWAzWTvv8zeS_4L6XEOH1rKvRhA4juj_CiDEZoTkzMMuy97VW__dAtjAF4RvhOU6BsMRHwuovH22TQ6lBzzylCOrX1WFHlsqktk2GYf1hvFc1xahURiaVjz9FUPgOPLWx9BXc7XsS4vlTHeSNnmCNcAz3NbVaIeT' },
+    { id: 3, categoryId: 'decor', name: 'غطاء "ليالي الشتاء"', price: '450 ر.س', image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAV43jPjol3lfxV3B-eGffdr3VR6BTjs0SmGE2GheWf7PTMBjEYADajD8pFPjZjwvF9vLa7JuWGB95bLoReQ_mI8ln6z1fWxKwW5D1sjspZEstr259og-myAM7sGmm09zkFDR6NZApDRufH4-CMFFKt-3A2dKwX2TftP86lys4yuOdro8-NdnYaQMwfN3jo6OX3V16ab37SVe5OH-aiHQThSEVkKWGCcR0VIniddZcEUKKP0OsLFEDhmLDxHycgBou01JeY3cUNFgRh' },
+    { id: 4, categoryId: 'clothes', name: 'طقم قبعة صوفية', price: '120 ر.س', image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDJ_N0NO8D8GKxP01aPr5uyI8pn2o5VcDjHkyz89kmxAmNhFME_KacgNYgP1PVaAJkWz6HHfpnE5GBhyOAsNvgabSU4ITiZkqI0jprnWmrYPsdub6CmKz8h65PeJASqjyHA6gmqhNE3Nb529MlAVtVuo3halIHKwmNYy5yEKcsYDLTYOdt4T9VlM7Rs32R6coV88yWzKBhGufg50pb5JDTGjPXoBzIUPhl1g-NbnDLifmAUpiVH34lAZ9YFJeEdhe00iTKS2UAAYZCD' }
+  ],
+  orders: []
+};
+
+
+export default function App() {
+  const [view, setView] = useState('home'); 
+  const [activeCategory, setActiveCategory] = useState(null);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
+  // Admin states
+  const [showAdminModal, setShowAdminModal] = useState(false);
+  const [adminPwd, setAdminPwd] = useState('');
+  const [adminError, setAdminError] = useState(false);
+  const [adminTab, setAdminTab] = useState('orders');
+  
+  // App Data (Lazy init to avoid overwriting on refresh)
+  const [storeData, setStoreData] = useState(() => {
+    const saved = localStorage.getItem('knotiqueStore');
+    return saved ? JSON.parse(saved) : defaultData;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('knotiqueStore', JSON.stringify(storeData));
+  }, [storeData]);
+
+  // CSS Injection for Fonts and specific Design System rules
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.innerHTML = `
+      @import url('https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+      @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
+      
+      body {
+        background-color: ${colors.background};
+        color: ${colors.onSurface};
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        direction: rtl;
+      }
+      h1, h2, h3, h4, h5, .font-headline {
+        font-family: 'Noto Serif', serif;
+      }
+      .asymmetric-grain {
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        opacity: 0.04;
+        pointer-events: none;
+      }
+      .glass-nav {
+        background: rgba(253, 248, 245, 0.85);
+        backdrop-filter: blur(12px);
+      }
+      .soft-shadow {
+        box-shadow: 0 20px 40px rgba(52, 50, 47, 0.06);
+      }
+      .no-zoom { touch-action: manipulation; }
+    `;
+    document.head.appendChild(style);
+    return () => document.head.removeChild(style);
+  }, []);
+
+  // Navigation Helper
+  const navigateTo = (targetView) => {
+    setView(targetView);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setIsMobileMenuOpen(false);
+  };
+
+  // Smart Logo Click (Double Click for Admin)
+  let clickTimeout = null;
+  const handleLogoClick = (e) => {
+    e.preventDefault();
+    if (e.detail === 1) {
+      clickTimeout = setTimeout(() => navigateTo('home'), 300);
+    } else if (e.detail === 2) {
+      clearTimeout(clickTimeout);
+      setShowAdminModal(true);
+      setAdminError(false);
+      setAdminPwd('');
+    }
+  };
+
+  const handleAdminLogin = (e) => {
+    e.preventDefault();
+    if (adminPwd === '11020') {
+      setShowAdminModal(false);
+      navigateTo('admin');
+    } else {
+      setAdminError(true);
+    }
+  };
+
+  // Handle Ordering
+  const submitOrder = (e) => {
+    e.preventDefault();
+    const orderData = {
+      id: Date.now(),
+      date: new Date().toLocaleString('ar-DZ'),
+      type: selectedProduct ? 'منتج جاهز' : 'طلب مخصص',
+      productName: selectedProduct || 'قطعة حسب الطلب',
+      customerName: e.target.name.value,
+      phone: e.target.phone.value,
+      notes: e.target.notes.value,
+      status: 'جديد'
+    };
+
+    setStoreData(prev => ({...prev, orders: [orderData, ...prev.orders]}));
+    
+    // عند تفعيل فايربيس، قم بإزالة التعليق عن السطر التالي:
+    // saveOrderToFirebase(orderData);
+
+    alert("تم استلام طلبك بحب! سنتواصل معك قريباً.");
+    navigateTo('home');
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col relative">
+      
+      {/* --- Navigation Bar --- */}
+      <nav className="glass-nav sticky top-0 z-50 w-full border-b border-white/20">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+          
+          <div className="flex items-center gap-10">
+            {/* Logo */}
+            <div className="cursor-pointer no-zoom flex items-center gap-2" onClick={handleLogoClick} title="انقر مرتين لدخول المدير">
+              <i className="fa-solid fa-fan text-2xl" style={{color: colors.primary}}></i>
+              <span className="text-2xl font-bold font-headline" style={{color: colors.primary}}>Knotique</span>
+            </div>
+
+            {/* Desktop Links */}
+            <div className="hidden lg:flex items-center gap-8">
+              <button onClick={() => navigateTo('home')} className={`font-bold transition-all ${view === 'home' ? 'border-b-2 pb-1' : 'opacity-70 hover:opacity-100'}`} style={{color: view === 'home' ? colors.primary : colors.secondary, borderColor: colors.primary}}>الرئيسية</button>
+              {storeData.categories.map(cat => (
+                <button key={cat.id} onClick={() => { setActiveCategory(cat); navigateTo('category'); }} className="font-bold opacity-70 hover:opacity-100 transition-all" style={{color: colors.secondary}}>
+                  {cat.name}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <button onClick={() => {setSelectedProduct(null); navigateTo('order');}} className="hidden md:block px-6 py-2.5 rounded-full font-bold text-white transition-opacity hover:opacity-90" style={{backgroundColor: colors.primary}}>
+              طلب خاص
+            </button>
+            <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="lg:hidden p-2 rounded-full bg-white soft-shadow">
+              <i className={`fa-solid ${isMobileMenuOpen ? 'fa-xmark' : 'fa-bars'} text-xl`} style={{color: colors.primary}}></i>
+            </button>
+          </div>
         </div>
-        <div class="flex items-center gap-3">
-          <button
-            id="owner-logo-button"
-            type="button"
-            title="اضغط مرتين لفتح واجهة صاحب المشروع"
-            class="flex h-12 w-12 items-center justify-center rounded-full border border-brand-sand bg-white text-brand-mocha shadow-soft transition hover:scale-105"
-          >
-            <span class="sr-only">فتح واجهة صاحب المشروع</span>
-            <svg viewBox="0 0 64 64" class="h-8 w-8" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M21 42C16 39 13 33 15 28C17 23 22 20 27 21L31 22L34 17C37 12 43 11 47 14C51 17 52 23 49 28L41 42" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M19 45C23 47 28 47 32 44L42 37" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>
-              <path d="M39 16C45 18 49 24 49 30" stroke="#d9968a" stroke-width="3.5" stroke-linecap="round"/>
-              <path d="M48 12L53 17" stroke="#728c69" stroke-width="3.5" stroke-linecap="round"/>
-              <path d="M53 12L48 17" stroke="#728c69" stroke-width="3.5" stroke-linecap="round"/>
-            </svg>
-          </button>
-          <a
-            href="#custom"
-            class="rounded-full bg-brand-mocha px-5 py-2.5 text-sm font-bold text-white transition hover:bg-brand-rose"
-            >اطلب الآن</a
-          >
-        </div>
+
+        {/* Mobile Menu */}
+        {isMobileMenuOpen && (
+          <div className="lg:hidden absolute top-full left-0 w-full bg-white shadow-xl border-t border-gray-100 py-4 px-6 flex flex-col gap-4">
+             <button onClick={() => navigateTo('home')} className="text-right font-bold text-lg" style={{color: colors.primary}}>الرئيسية</button>
+             {storeData.categories.map(cat => (
+                <button key={cat.id} onClick={() => { setActiveCategory(cat); navigateTo('category'); }} className="text-right font-bold text-lg" style={{color: colors.secondary}}>
+                  {cat.name}
+                </button>
+             ))}
+             <button onClick={() => {setSelectedProduct(null); navigateTo('order');}} className="w-full mt-4 px-6 py-3 rounded-xl font-bold text-white text-center" style={{backgroundColor: colors.primary}}>طلب خاص</button>
+          </div>
+        )}
       </nav>
 
-      <section
-        id="home"
-        class="mx-auto grid max-w-7xl gap-12 px-6 pb-20 pt-8 lg:grid-cols-2 lg:px-8 lg:pb-24 lg:pt-12"
-      >
-        <div class="flex flex-col justify-center">
-          <span class="mb-4 inline-flex w-fit rounded-full bg-white px-4 py-2 text-sm font-bold text-brand-olive shadow-soft"
-            >منتجات كروشيه يدوية بتفاصيل مميزة</span
-          >
-          <h1 class="mb-6 text-4xl font-extrabold leading-tight text-brand-dark md:text-6xl">
-            موقع أنيق لمشروعك الخاص في <span class="text-brand-rose">الكروشيه</span>
-          </h1>
-          <p class="mb-8 max-w-2xl text-lg leading-8 text-brand-mocha/90">
-            اعرضي لزبائنك أقسام الأميغورومي، الإكسسوارات، الملابس، وديكور المنزل. عند دخول أي قسم سيجد الزبون ما هو
-            متوفر الآن، وما يمكن تنفيذه حسب الطلب، مع نموذج طلب خاص وإدارة خفيفة داخل واجهة صاحب المشروع.
-          </p>
-          <div class="flex flex-wrap gap-4">
-            <a href="#categories" class="rounded-full bg-brand-rose px-7 py-3 text-sm font-bold text-white shadow-soft hover:bg-brand-mocha">استعراض الأقسام</a>
-            <a href="#custom" class="rounded-full border border-brand-mocha px-7 py-3 text-sm font-bold text-brand-mocha hover:bg-white">نموذج الطلب الخاص</a>
-          </div>
-          <div class="mt-10 grid gap-4 sm:grid-cols-3">
-            <div class="rounded-3xl bg-white p-5 shadow-soft">
-              <p class="text-3xl font-extrabold text-brand-rose">4</p>
-              <p class="text-sm text-brand-mocha">أقسام رئيسية واضحة</p>
-            </div>
-            <div class="rounded-3xl bg-white p-5 shadow-soft">
-              <p class="text-3xl font-extrabold text-brand-olive">12+</p>
-              <p class="text-sm text-brand-mocha">منتجات جاهزة للعرض</p>
-            </div>
-            <div class="rounded-3xl bg-white p-5 shadow-soft">
-              <p class="text-3xl font-extrabold text-brand-mocha">11020</p>
-              <p class="text-sm text-brand-mocha">رمز دخول واجهة صاحب المشروع</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="grid gap-4 sm:grid-cols-2">
-          <article class="rounded-[2rem] bg-white p-4 shadow-soft sm:translate-y-8">
-            <img class="mb-4 h-72 w-full rounded-[1.5rem] object-cover" src="https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=900&q=80" alt="منتجات كروشيه يدوية" />
-            <h2 class="text-xl font-bold text-brand-mocha">تصاميم يدوية تبرز هوية مشروعك</h2>
-          </article>
-          <article class="rounded-[2rem] bg-brand-mocha p-4 text-white shadow-soft">
-            <img class="mb-4 h-72 w-full rounded-[1.5rem] object-cover" src="https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=900&q=80" alt="أدوات كروشيه وخيوط" />
-            <h2 class="text-xl font-bold">اضغطي مرتين على شعار اليد والإبرة والخيط لفتح واجهة صاحب المشروع</h2>
-          </article>
-        </div>
-      </section>
-    </header>
-
-    <main>
-      <section id="categories" class="mx-auto max-w-7xl px-6 py-16 lg:px-8">
-        <div class="mb-10 text-center">
-          <p class="mb-3 text-sm font-bold text-brand-rose">البداية كما طلبت</p>
-          <h2 class="mb-4 text-3xl font-extrabold md:text-4xl">الأقسام الرئيسية في واجهة الموقع</h2>
-          <p class="mx-auto max-w-3xl text-brand-mocha/90">
-            يبدأ الموقع بأربع فئات أساسية: أميغورومي، إكسسوارات، ملابس، ديكور للمنزل. ويمكن لصاحب المشروع إضافة فئات
-            وصور وشرح وسعر من الواجهة الخاصة به.
-          </p>
-        </div>
-
-        <div id="category-buttons" class="grid gap-6 md:grid-cols-2 xl:grid-cols-4"></div>
-      </section>
-
-      <section id="products" class="bg-white py-16">
-        <div class="mx-auto max-w-7xl px-6 lg:px-8">
-          <div class="mb-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-            <div>
-              <p class="mb-2 text-sm font-bold text-brand-rose">المتوفر الآن وما يمكن صنعه</p>
-              <h2 id="category-title" class="text-3xl font-extrabold">قسم الأميغورومي</h2>
-              <p id="category-description" class="mt-3 max-w-3xl text-brand-mocha/80"></p>
-            </div>
-            <a href="#custom" class="w-fit rounded-full bg-brand-dark px-6 py-3 text-sm font-bold text-white hover:bg-brand-rose">لم تجد ما تريد؟ اطلب تصميماً خاصاً</a>
-          </div>
-
-          <div class="grid gap-8 lg:grid-cols-[1.2fr,0.8fr]">
-            <div>
-              <h3 class="mb-5 text-xl font-extrabold text-brand-mocha">المنتجات المعروضة</h3>
-              <div id="available-list" class="grid gap-5 md:grid-cols-2"></div>
-            </div>
-            <aside class="rounded-[2rem] bg-brand-sand p-8 shadow-soft">
-              <h3 class="mb-5 text-xl font-extrabold text-brand-mocha">يمكننا أن نصنع لك أيضاً</h3>
-              <ul id="custom-list" class="space-y-4 text-sm leading-7 text-brand-mocha"></ul>
-              <div class="mt-8 rounded-[1.5rem] bg-white p-5">
-                <p class="mb-2 text-sm font-bold text-brand-rose">ماذا نوفر في الطلبات الخاصة؟</p>
-                <ul class="space-y-2 text-sm text-brand-mocha/85">
-                  <li>• اختيار الألوان والخيط المناسب.</li>
-                  <li>• تنفيذ الحجم أو المقاس الذي يريده الزبون.</li>
-                  <li>• إضافة اسم أو تفاصيل خاصة حسب الطلب.</li>
-                </ul>
-              </div>
-            </aside>
-          </div>
-        </div>
-      </section>
-
-      <section id="custom" class="mx-auto max-w-7xl px-6 py-16 lg:px-8">
-        <div class="grid gap-10 lg:grid-cols-[0.9fr,1.1fr]">
-          <div class="rounded-[2rem] bg-brand-mocha p-8 text-white shadow-soft">
-            <p class="mb-3 text-sm font-bold text-brand-sand">جهة خاصة للطلب</p>
-            <h2 class="mb-5 text-3xl font-extrabold">أرسل طلبك حتى لو لم تجد ما تريد في الموقع</h2>
-            <p class="mb-8 leading-8 text-white/85">
-              هذا النموذج مخصص للزبون الذي يريد تصميماً غير موجود حالياً في الأقسام. يكتب الاسم واللقب ورقم الهاتف، ثم يرفع صورة
-              القطعة التي يريد تنفيذها حتى يتم حفظ الطلب داخل واجهة صاحب المشروع محلياً.
-            </p>
-            <div class="space-y-4 rounded-[1.5rem] bg-white/10 p-6">
-              <div>
-                <p class="text-sm font-bold">خطوات الطلب:</p>
-                <ul class="mt-3 space-y-2 text-sm text-white/85">
-                  <li>1. إدخال الاسم واللقب ورقم الهاتف.</li>
-                  <li>2. كتابة وصف بسيط للموديل أو المقاس.</li>
-                  <li>3. رفع صورة مرجعية للتصميم المطلوب.</li>
-                  <li>4. الضغط على زر إرسال الطلب.</li>
-                </ul>
-              </div>
-            </div>
-            <div class="mt-6 rounded-[1.5rem] bg-white/10 p-5 text-sm leading-7 text-white/85">
-              <p class="font-bold text-white">الآن النموذج عملي:</p>
-              <p>بعد الإرسال سيتم حفظ الطلب في المتصفح وإظهاره مباشرة في واجهة صاحب المشروع، مع إمكانية متابعة الطلبات من نفس الجهاز.</p>
-            </div>
-          </div>
-
-          <form id="custom-order-form" class="rounded-[2rem] bg-white p-8 shadow-soft">
-            <div class="grid gap-6 md:grid-cols-2">
-              <label class="block">
-                <span class="mb-2 block text-sm font-bold text-brand-mocha">الاسم</span>
-                <input id="first-name" name="firstName" type="text" placeholder="اكتب الاسم" required class="w-full rounded-2xl border border-brand-sand bg-brand-cream px-4 py-3 outline-none transition focus:border-brand-rose" />
-              </label>
-              <label class="block">
-                <span class="mb-2 block text-sm font-bold text-brand-mocha">اللقب</span>
-                <input id="last-name" name="lastName" type="text" placeholder="اكتب اللقب" required class="w-full rounded-2xl border border-brand-sand bg-brand-cream px-4 py-3 outline-none transition focus:border-brand-rose" />
-              </label>
-            </div>
-
-            <div class="mt-6 grid gap-6 md:grid-cols-2">
-              <label class="block">
-                <span class="mb-2 block text-sm font-bold text-brand-mocha">رقم الهاتف</span>
-                <input id="phone" name="phone" type="tel" placeholder="مثال: 0550000000" required class="w-full rounded-2xl border border-brand-sand bg-brand-cream px-4 py-3 outline-none transition focus:border-brand-rose" />
-              </label>
-              <label class="block">
-                <span class="mb-2 block text-sm font-bold text-brand-mocha">القسم الأقرب للطلب</span>
-                <select id="category-select" name="category" class="w-full rounded-2xl border border-brand-sand bg-brand-cream px-4 py-3 outline-none transition focus:border-brand-rose"></select>
-              </label>
-            </div>
-
-            <label class="mt-6 block">
-              <span class="mb-2 block text-sm font-bold text-brand-mocha">وصف ما تريد صنعه</span>
-              <textarea id="details" name="details" rows="5" placeholder="اكتب المقاس، الألوان، المناسبة، أو أي تفاصيل إضافية..." required class="w-full rounded-[1.5rem] border border-brand-sand bg-brand-cream px-4 py-3 outline-none transition focus:border-brand-rose"></textarea>
-            </label>
-
-            <label class="mt-6 block rounded-[1.5rem] border-2 border-dashed border-brand-rose bg-brand-cream p-6 text-center">
-              <span class="mb-3 block text-sm font-bold text-brand-mocha">صورة ما تريد أن نصنعه لك</span>
-              <input id="reference-image" name="referenceImage" type="file" accept="image/*" class="mx-auto block w-full max-w-sm text-sm text-brand-mocha file:ml-4 file:rounded-full file:border-0 file:bg-brand-mocha file:px-4 file:py-2 file:font-bold file:text-white hover:file:bg-brand-rose" />
-              <span id="file-name" class="mt-3 block text-sm text-brand-mocha/75">لم يتم اختيار أي صورة بعد.</span>
-            </label>
-
-            <div id="form-status" class="mt-6 hidden rounded-[1.5rem] px-4 py-3 text-sm font-bold"></div>
-
-            <div class="mt-8 flex flex-col gap-3 sm:flex-row">
-              <button type="submit" class="w-full rounded-full bg-brand-rose px-6 py-4 text-base font-extrabold text-white transition hover:bg-brand-mocha">
-                إرسال الطلب
-              </button>
-              <button id="clear-draft" type="button" class="w-full rounded-full border border-brand-mocha px-6 py-4 text-base font-bold text-brand-mocha transition hover:bg-brand-cream">
-                مسح المسودة
-              </button>
-            </div>
-          </form>
-        </div>
-      </section>
-
-      <section id="owner-panel" class="hidden bg-brand-dark py-16 text-white">
-        <div class="mx-auto max-w-7xl px-6 lg:px-8">
-          <div class="mb-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-            <div>
-              <p class="mb-2 text-sm font-bold text-brand-sand">واجهة صاحب المشروع</p>
-              <h2 class="text-3xl font-extrabold">إدارة الطلبات والمنتجات وإعدادات Firebase</h2>
-              <p class="mt-3 max-w-3xl text-white/80">هذه الواجهة محمية برقم سري 11020 وتعمل محلياً داخل المتصفح لعرض الطلبات وإضافة المنتجات والفئات.</p>
-            </div>
-            <button id="owner-logout" type="button" class="w-fit rounded-full border border-white/30 px-6 py-3 text-sm font-bold text-white transition hover:bg-white/10">إغلاق الواجهة</button>
-          </div>
-
-          <div class="grid gap-8 xl:grid-cols-[1fr,1.1fr]">
-            <div class="space-y-8">
-              <section class="rounded-[2rem] bg-white/10 p-6 shadow-soft backdrop-blur-sm">
-                <h3 class="mb-4 text-xl font-extrabold">مكان وضع مفتاح Firebase</h3>
-                <label class="block">
-                  <span class="mb-2 block text-sm font-bold text-white/80">Firebase API Key</span>
-                  <input id="firebase-key-input" type="text" placeholder="ضع مفتاح Firebase هنا" class="w-full rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-white outline-none placeholder:text-white/40 focus:border-brand-sand" />
-                </label>
-                <button id="save-firebase-key" type="button" class="mt-4 rounded-full bg-brand-sand px-5 py-3 text-sm font-extrabold text-brand-dark transition hover:bg-white">حفظ المفتاح</button>
-                <p id="firebase-key-status" class="mt-3 text-sm text-white/70">لن يتم إرسال المفتاح لأي مكان؛ سيتم حفظه محلياً فقط كحقل جاهز للربط لاحقاً.</p>
-              </section>
-
-              <section class="rounded-[2rem] bg-white/10 p-6 shadow-soft backdrop-blur-sm">
-                <div class="mb-4 flex items-center justify-between">
-                  <h3 class="text-xl font-extrabold">استقبال الطلبات</h3>
-                  <span id="orders-count" class="rounded-full bg-white/10 px-4 py-2 text-xs font-bold">0 طلب</span>
-                </div>
-                <div id="owner-requests" class="space-y-4"></div>
-              </section>
-            </div>
-
-            <div class="space-y-8">
-              <section class="rounded-[2rem] bg-white/10 p-6 shadow-soft backdrop-blur-sm">
-                <h3 class="mb-4 text-xl font-extrabold">إضافة منتج أو فئة جديدة</h3>
-                <form id="owner-product-form" class="grid gap-4 md:grid-cols-2">
-                  <label class="block md:col-span-2">
-                    <span class="mb-2 block text-sm font-bold text-white/80">اسم المنتج</span>
-                    <input name="name" type="text" required placeholder="مثال: حقيبة كروشيه مميزة" class="w-full rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-white outline-none placeholder:text-white/40 focus:border-brand-sand" />
-                  </label>
-                  <label class="block">
-                    <span class="mb-2 block text-sm font-bold text-white/80">الفئة</span>
-                    <input name="category" type="text" required placeholder="مثال: إكسسوارات" class="w-full rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-white outline-none placeholder:text-white/40 focus:border-brand-sand" />
-                  </label>
-                  <label class="block">
-                    <span class="mb-2 block text-sm font-bold text-white/80">السعر</span>
-                    <input name="price" type="text" required placeholder="مثال: 2500 دج" class="w-full rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-white outline-none placeholder:text-white/40 focus:border-brand-sand" />
-                  </label>
-                  <label class="block md:col-span-2">
-                    <span class="mb-2 block text-sm font-bold text-white/80">شرح المنتج</span>
-                    <textarea name="details" rows="4" required placeholder="أضيفي وصفاً مختصراً للمنتج" class="w-full rounded-[1.5rem] border border-white/20 bg-white/10 px-4 py-3 text-white outline-none placeholder:text-white/40 focus:border-brand-sand"></textarea>
-                  </label>
-                  <label class="block md:col-span-2">
-                    <span class="mb-2 block text-sm font-bold text-white/80">رابط الصورة أو اسمها</span>
-                    <input name="image" type="text" placeholder="https://... أو اسم صورة" class="w-full rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-white outline-none placeholder:text-white/40 focus:border-brand-sand" />
-                  </label>
-                  <label class="block md:col-span-2">
-                    <span class="mb-2 block text-sm font-bold text-white/80">ما الذي يمكن تنفيذه حسب الطلب؟</span>
-                    <textarea name="customIdeas" rows="3" placeholder="اكتبي كل فكرة في سطر منفصل" class="w-full rounded-[1.5rem] border border-white/20 bg-white/10 px-4 py-3 text-white outline-none placeholder:text-white/40 focus:border-brand-sand"></textarea>
-                  </label>
-                  <div class="md:col-span-2 flex flex-col gap-3 sm:flex-row">
-                    <button type="submit" class="rounded-full bg-brand-rose px-6 py-3 text-sm font-extrabold text-white transition hover:bg-brand-sand hover:text-brand-dark">إضافة المنتج</button>
-                    <p id="owner-form-status" class="rounded-full bg-white/10 px-4 py-3 text-sm text-white/80">أضيفي منتجاً جديداً ليظهر مباشرة في واجهة الزبون.</p>
+      {/* --- Main Content Area --- */}
+      <main className="flex-grow">
+        
+        {/* ==================== HOME VIEW ==================== */}
+        {view === 'home' && (
+          <div className="animate-[fadeIn_0.5s_ease-out]">
+            
+            {/* Hero Section */}
+            <section className="relative min-h-[85vh] flex items-center overflow-hidden pt-12 pb-20">
+              <div className="absolute inset-0 bg-gradient-to-tr from-[#c5eccc]/30 to-[#ffdcbd]/20 -z-10"></div>
+              <div className="absolute inset-0 asymmetric-grain -z-10"></div>
+              
+              <div className="max-w-7xl mx-auto px-6 w-full grid grid-cols-1 lg:grid-cols-2 gap-16 items-center relative z-10">
+                <div className="order-2 lg:order-1 text-right">
+                  <span className="inline-block px-4 py-1.5 rounded-full text-sm font-bold mb-6" style={{backgroundColor: colors.tertiaryContainer, color: '#643c45'}}>صُنع بحب وشغف</span>
+                  <h1 className="font-headline text-5xl md:text-7xl leading-tight mb-8" style={{color: colors.onSurface}}>
+                    ننسج من خيوط الصوف <span className="italic font-light" style={{color: colors.primary}}>حكايات دافئة</span>
+                  </h1>
+                  <p className="text-lg md:text-xl max-w-xl mb-12 leading-relaxed" style={{color: colors.onSurfaceVariant}}>
+                    اكتشف روعة الكروشيه اليدوي في تصاميم تجمع بين الأصالة والعصرية. كل قطعة لدينا هي تحفة فريدة صُممت لتدوم طويلاً.
+                  </p>
+                  <div className="flex flex-wrap gap-4">
+                    <button onClick={() => document.getElementById('collections').scrollIntoView({behavior:'smooth'})} className="px-10 py-4 rounded-full text-lg font-bold text-white hover:opacity-90 transition-all soft-shadow hover:-translate-y-1" style={{backgroundColor: colors.primary}}>
+                      تصفح المجموعات
+                    </button>
                   </div>
-                </form>
-              </section>
-
-              <section class="rounded-[2rem] bg-white/10 p-6 shadow-soft backdrop-blur-sm">
-                <h3 class="mb-4 text-xl font-extrabold">المنتجات والفئات الحالية</h3>
-                <div id="owner-products" class="grid gap-4"></div>
-              </section>
-            </div>
-          </div>
-        </div>
-      </section>
-    </main>
-
-    <div id="owner-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-brand-dark/70 p-4 backdrop-blur-sm">
-      <div class="w-full max-w-md rounded-[2rem] bg-white p-8 text-brand-dark shadow-soft">
-        <div class="mb-6 text-center">
-          <p class="mb-2 text-sm font-bold text-brand-rose">دخول صاحب المشروع</p>
-          <h2 class="text-2xl font-extrabold">أدخلي الرقم السري لفتح الواجهة</h2>
-          <p class="mt-3 text-sm text-brand-mocha/80">للدخول استخدمي الرقم السري: 11020</p>
-        </div>
-        <form id="owner-login-form" class="space-y-4">
-          <label class="block">
-            <span class="mb-2 block text-sm font-bold text-brand-mocha">الرقم السري</span>
-            <input id="owner-passcode" type="password" inputmode="numeric" placeholder="أدخلي الرقم السري" class="w-full rounded-2xl border border-brand-sand bg-brand-cream px-4 py-3 outline-none transition focus:border-brand-rose" />
-          </label>
-          <p id="owner-login-status" class="text-sm text-brand-mocha/80">اضغطي مرتين على الشعار الصغير لفتح هذه النافذة.</p>
-          <div class="flex gap-3">
-            <button type="submit" class="w-full rounded-full bg-brand-mocha px-5 py-3 text-sm font-extrabold text-white transition hover:bg-brand-rose">دخول</button>
-            <button id="close-owner-modal" type="button" class="w-full rounded-full border border-brand-mocha px-5 py-3 text-sm font-bold text-brand-mocha transition hover:bg-brand-cream">إلغاء</button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <footer id="contact" class="bg-brand-dark py-10 text-white">
-      <div class="mx-auto flex max-w-7xl flex-col gap-5 px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
-        <div>
-          <h2 class="text-2xl font-extrabold">دفء الغرز</h2>
-          <p class="mt-2 text-sm text-white/75">موقع كروشيه عربي يعرض المتوفر وما يمكن صنعه، مع استقبال الطلبات الخاصة بسهولة.</p>
-        </div>
-        <div class="flex flex-wrap gap-3 text-sm text-white/80">
-          <span class="rounded-full bg-white/10 px-4 py-2">الدخول لصاحب المشروع: 11020</span>
-          <span class="rounded-full bg-white/10 px-4 py-2">شعار اليد والإبرة والخيط موجود بالأعلى</span>
-          <span class="rounded-full bg-white/10 px-4 py-2">الطلبات تحفظ محلياً على نفس الجهاز</span>
-        </div>
-      </div>
-    </footer>
-
-    <script>
-      const DRAFT_KEY = 'custom-order-draft';
-      const OWNER_SESSION_KEY = 'owner-session';
-      const FIREBASE_KEY_STORAGE = 'firebase-api-key';
-      const PRODUCTS_STORAGE = 'crochet-products';
-      const ORDERS_STORAGE = 'crochet-orders';
-      const OWNER_PASSCODE = '11020';
-      const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=900&q=80';
-
-      const defaultCategories = {
-        amigurumi: {
-          id: 'amigurumi',
-          label: 'أميغورومي',
-          title: 'قسم الأميغورومي',
-          description: 'دمى ومجسمات يدوية مناسبة للهدايا، أعياد الميلاد، وغرف الأطفال، مع إمكانية تنفيذ شخصيات خاصة.'
-        },
-        accessories: {
-          id: 'accessories',
-          label: 'إكسسوارات',
-          title: 'قسم الإكسسوارات',
-          description: 'قطع عملية وأنيقة للاستعمال اليومي أو كهدايا خفيفة، مع إمكانية تغيير اللون والمقاس ونوع الإغلاق.'
-        },
-        clothes: {
-          id: 'clothes',
-          label: 'ملابس',
-          title: 'قسم الملابس',
-          description: 'ملابس كروشيه مريحة ومميزة للأطفال والكبار، مع تنفيذ المقاسات الموسمية حسب الطلب.'
-        },
-        decor: {
-          id: 'decor',
-          label: 'ديكور المنزل',
-          title: 'قسم ديكور المنزل',
-          description: 'لمسات منزلية دافئة وعملية من الكروشيه تزيد أناقة المكان، سواء للصالون أو المطبخ أو غرف النوم.'
-        }
-      };
-
-      const defaultProducts = [
-        { id: crypto.randomUUID(), categoryId: 'amigurumi', categoryLabel: 'أميغورومي', name: 'أرنب وردي صغير', details: 'متوفر الآن - 3 قطع - ألوان هادئة', price: '1800 دج', image: DEFAULT_IMAGE, customIdeas: ['شخصيات كرتونية حسب الصورة المرجعية.', 'دمى بأحجام أكبر أو أصغر حسب الطلب.'] },
-        { id: crypto.randomUUID(), categoryId: 'amigurumi', categoryLabel: 'أميغورومي', name: 'دبدوب باسم الطفل', details: 'متوفر الآن - يمكن إضافة الاسم', price: '2200 دج', image: DEFAULT_IMAGE, customIdeas: ['تنفيذ ألوان خاصة للمناسبات أو الهدايا.'] },
-        { id: crypto.randomUUID(), categoryId: 'accessories', categoryLabel: 'إكسسوارات', name: 'حقيبة يد صغيرة', details: 'متوفرة الآن - لون بيج وكحلي', price: '2800 دج', image: DEFAULT_IMAGE, customIdeas: ['حقائب بأحجام خاصة أو بأحزمة طويلة.', 'إكسسوارات بألوان الهوية الخاصة بك.'] },
-        { id: crypto.randomUUID(), categoryId: 'clothes', categoryLabel: 'ملابس', name: 'طاقم رضيع', details: 'متوفر الآن - حتى عمر 6 أشهر', price: '3200 دج', image: DEFAULT_IMAGE, customIdeas: ['تفصيل حسب المقاس الدقيق للزبون.', 'اختيار ألوان خاصة أو موديل من صورة.'] },
-        { id: crypto.randomUUID(), categoryId: 'decor', categoryLabel: 'ديكور المنزل', name: 'مفرش طاولة دائري', details: 'متوفر الآن - مقاسان', price: '2100 دج', image: DEFAULT_IMAGE, customIdeas: ['مفارش حسب مقاس الطاولة أو الكومود.', 'سلال تنظيم بأحجام متعددة.'] }
-      ];
-
-      const categoryButtons = document.getElementById('category-buttons');
-      const categoryTitle = document.getElementById('category-title');
-      const categoryDescription = document.getElementById('category-description');
-      const availableList = document.getElementById('available-list');
-      const customList = document.getElementById('custom-list');
-      const categorySelect = document.getElementById('category-select');
-      const form = document.getElementById('custom-order-form');
-      const fileInput = document.getElementById('reference-image');
-      const fileName = document.getElementById('file-name');
-      const clearDraftButton = document.getElementById('clear-draft');
-      const statusBox = document.getElementById('form-status');
-      const formFields = Array.from(form.querySelectorAll('input[name], select[name], textarea[name]'));
-      const ownerLogoButton = document.getElementById('owner-logo-button');
-      const ownerModal = document.getElementById('owner-modal');
-      const ownerLoginForm = document.getElementById('owner-login-form');
-      const ownerPasscodeInput = document.getElementById('owner-passcode');
-      const ownerLoginStatus = document.getElementById('owner-login-status');
-      const closeOwnerModalButton = document.getElementById('close-owner-modal');
-      const ownerPanel = document.getElementById('owner-panel');
-      const ownerLogoutButton = document.getElementById('owner-logout');
-      const firebaseKeyInput = document.getElementById('firebase-key-input');
-      const saveFirebaseKeyButton = document.getElementById('save-firebase-key');
-      const firebaseKeyStatus = document.getElementById('firebase-key-status');
-      const ownerRequests = document.getElementById('owner-requests');
-      const ordersCount = document.getElementById('orders-count');
-      const ownerProductForm = document.getElementById('owner-product-form');
-      const ownerFormStatus = document.getElementById('owner-form-status');
-      const ownerProducts = document.getElementById('owner-products');
-
-      let categories = { ...defaultCategories };
-      let products = loadProducts();
-      let orders = loadOrders();
-      let activeCategoryId = products[0]?.categoryId || Object.keys(categories)[0];
-
-      function slugifyCategory(value) {
-        return value
-          .toLowerCase()
-          .trim()
-          .replace(/\s+/g, '-')
-          .replace(/[^\u0600-\u06FF\w-]/g, '') || `category-${Date.now()}`;
-      }
-
-      function loadProducts() {
-        const stored = localStorage.getItem(PRODUCTS_STORAGE);
-        if (!stored) {
-          localStorage.setItem(PRODUCTS_STORAGE, JSON.stringify(defaultProducts));
-          return [...defaultProducts];
-        }
-
-        try {
-          return JSON.parse(stored);
-        } catch {
-          localStorage.setItem(PRODUCTS_STORAGE, JSON.stringify(defaultProducts));
-          return [...defaultProducts];
-        }
-      }
-
-      function saveProducts() {
-        localStorage.setItem(PRODUCTS_STORAGE, JSON.stringify(products));
-      }
-
-      function loadOrders() {
-        const stored = localStorage.getItem(ORDERS_STORAGE);
-        if (!stored) {
-          return [];
-        }
-
-        try {
-          return JSON.parse(stored);
-        } catch {
-          localStorage.removeItem(ORDERS_STORAGE);
-          return [];
-        }
-      }
-
-      function saveOrders() {
-        localStorage.setItem(ORDERS_STORAGE, JSON.stringify(orders));
-      }
-
-      function syncCategoriesFromProducts() {
-        categories = { ...defaultCategories };
-        products.forEach((product) => {
-          if (!categories[product.categoryId]) {
-            categories[product.categoryId] = {
-              id: product.categoryId,
-              label: product.categoryLabel,
-              title: `قسم ${product.categoryLabel}`,
-              description: `منتجات ${product.categoryLabel} المضافة من واجهة صاحب المشروع.`
-            };
-          }
-        });
-      }
-
-      function renderCategoryButtons() {
-        syncCategoriesFromProducts();
-        categoryButtons.innerHTML = Object.values(categories)
-          .map(
-            (category) => `
-              <button class="category-btn rounded-[2rem] bg-white p-6 text-right shadow-soft ${category.id === activeCategoryId ? 'ring-2 ring-brand-rose' : ''}" data-category="${category.id}">
-                <span class="mb-5 inline-flex rounded-full bg-brand-sand px-4 py-2 text-sm font-bold text-brand-mocha">${category.label}</span>
-                <h3 class="mb-3 text-2xl font-extrabold">${category.title.replace('قسم ', '')}</h3>
-                <p class="text-sm leading-7 text-brand-mocha/80">${category.description}</p>
-              </button>
-            `
-          )
-          .join('');
-
-        categoryButtons.querySelectorAll('.category-btn').forEach((button) => {
-          button.addEventListener('click', () => {
-            activeCategoryId = button.dataset.category;
-            renderStorefront();
-          });
-        });
-      }
-
-      function renderCategoryOptions() {
-        categorySelect.innerHTML = `${Object.values(categories)
-          .map((category) => `<option>${category.label}</option>`)
-          .join('')}<option>طلب مختلف</option>`;
-      }
-
-      function renderStorefront() {
-        renderCategoryButtons();
-        renderCategoryOptions();
-        const category = categories[activeCategoryId] || Object.values(categories)[0];
-        const categoryProducts = products.filter((product) => product.categoryId === category.id);
-        const customIdeas = [...new Set(categoryProducts.flatMap((product) => product.customIdeas || []))];
-
-        categoryTitle.textContent = category.title;
-        categoryDescription.textContent = category.description;
-
-        availableList.innerHTML = categoryProducts.length
-          ? categoryProducts
-              .map(
-                (item) => `
-                  <article class="overflow-hidden rounded-[1.75rem] border border-brand-sand bg-brand-cream p-4">
-                    <img src="${item.image || DEFAULT_IMAGE}" alt="${item.name}" class="mb-4 h-44 w-full rounded-[1.25rem] object-cover" />
-                    <p class="mb-3 text-xs font-bold text-brand-rose">جاهز أو شبه جاهز</p>
-                    <h4 class="text-lg font-extrabold text-brand-mocha">${item.name}</h4>
-                    <p class="mt-2 text-sm leading-7 text-brand-mocha/80">${item.details}</p>
-                    <p class="mt-4 text-sm font-bold text-brand-olive">${item.price}</p>
-                  </article>
-                `
-              )
-              .join('')
-          : '<p class="rounded-[1.5rem] bg-brand-cream p-5 text-sm text-brand-mocha">لا توجد منتجات في هذه الفئة بعد.</p>';
-
-        customList.innerHTML = customIdeas.length
-          ? customIdeas.map((item) => `<li class="rounded-2xl bg-white/70 px-4 py-3">• ${item}</li>`).join('')
-          : '<li class="rounded-2xl bg-white/70 px-4 py-3">• يمكن تنفيذ تفاصيل مخصصة حسب الطلب.</li>';
-      }
-
-      function renderOwnerOrders() {
-        ordersCount.textContent = `${orders.length} طلب`;
-        ownerRequests.innerHTML = orders.length
-          ? orders
-              .slice()
-              .reverse()
-              .map(
-                (order) => `
-                  <article class="rounded-[1.5rem] border border-white/10 bg-white/5 p-4">
-                    <div class="mb-3 flex items-center justify-between gap-3">
-                      <h4 class="text-lg font-extrabold">${order.firstName} ${order.lastName}</h4>
-                      <span class="rounded-full bg-white/10 px-3 py-1 text-xs font-bold">${order.createdAt}</span>
+                </div>
+                
+                <div className="order-1 lg:order-2 relative">
+                  <div className="relative w-full aspect-square max-w-lg mx-auto">
+                    <div className="absolute top-0 right-0 w-4/5 h-4/5 rounded-[2rem] overflow-hidden rotate-3 z-20 shadow-2xl border-4 border-white">
+                      <img className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAy7qFd__Jl-zvsXGSkdLhlWFQ_GU2jw0Ovw36UwhCcTVX6onspH4RKyEyo7r2hI4W5vxG2N1TnHEb29ZJObP_H3W9dLQ3F5oOFU1oeGItzFbXRTrqRejKgAZPelVbdkl0rp87KNCuoCN-I6FPzpl4ChbU_vgy_RxC-VtcE_aAImKja9MJNbmIwsBTc_vmmh9Prdvqeqpc4mwySUwg0P_hpn8hSxrDf1NBj8DfLAPdPARK4ZoPCTLBXSRC2NjoClHic2NXW_oWk_AOK" alt="Crochet"/>
                     </div>
-                    <p class="text-sm text-white/80">الهاتف: ${order.phone}</p>
-                    <p class="mt-2 text-sm text-white/80">القسم: ${order.category}</p>
-                    <p class="mt-2 text-sm leading-7 text-white/90">${order.details}</p>
-                    <p class="mt-3 text-xs text-white/60">الصورة: ${order.referenceImage || 'لم تُرفق صورة'}</p>
-                  </article>
-                `
-              )
-              .join('')
-          : '<p class="rounded-[1.5rem] bg-white/5 p-4 text-sm text-white/75">لا توجد طلبات حتى الآن.</p>';
-      }
-
-      function renderOwnerProducts() {
-        ownerProducts.innerHTML = products
-          .map(
-            (product) => `
-              <article class="rounded-[1.5rem] border border-white/10 bg-white/5 p-4">
-                <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                  <div>
-                    <p class="text-xs font-bold text-brand-sand">${product.categoryLabel}</p>
-                    <h4 class="mt-2 text-lg font-extrabold">${product.name}</h4>
-                    <p class="mt-2 text-sm text-white/80">${product.details}</p>
-                    <p class="mt-3 text-sm font-bold text-brand-rose">${product.price}</p>
+                    <div className="absolute bottom-0 left-0 w-3/4 h-3/4 rounded-[2rem] overflow-hidden -rotate-6 z-10 opacity-90 border-4 border-white">
+                      <img className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBLLfVwC-5_zzEtBrr1g-s4WzGoMaEWJK-VO0zVf36pKGVSfBgg9yr6atkPbtuXJaMLRHxYzpUtDjPd65JXunGyo84Cp89gkWvyRbzEKCR3eVVc6R9v_mnWS74nRQvFDNbRXboIrwzHpaO4s5pa1Z_aJBZ43K0VqTupm6AzmbNeT-xSpM4PS8iAHx-h7f9TMJZ810-ezSHxBnvAbHn9OsQr9TVug4kV_YRR_EZ5ZX6Zkg5kTkdD47oDMCRWT-0jJ_8pRKItHfVo9hkI" alt="Tools"/>
+                    </div>
                   </div>
-                  <img src="${product.image || DEFAULT_IMAGE}" alt="${product.name}" class="h-24 w-24 rounded-2xl object-cover" />
                 </div>
-              </article>
-            `
-          )
-          .join('');
-      }
+              </div>
+            </section>
 
-      function showStatus(message, type) {
-        statusBox.textContent = message;
-        statusBox.className = 'mt-6 rounded-[1.5rem] px-4 py-3 text-sm font-bold';
-        statusBox.classList.add(type === 'success' ? 'bg-green-100' : 'bg-amber-100', type === 'success' ? 'text-green-800' : 'text-amber-800');
-      }
+            {/* About Section */}
+            <section className="py-24" style={{backgroundColor: colors.surfaceLow}}>
+              <div className="max-w-7xl mx-auto px-6">
+                <div className="bg-white rounded-[3rem] p-10 md:p-20 flex flex-col md:flex-row gap-16 items-center soft-shadow relative overflow-hidden">
+                   <div className="absolute top-0 right-0 w-32 h-32 bg-[#c5eccc] rounded-full blur-3xl opacity-50 -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+                   
+                   <div className="w-full md:w-1/2 relative z-10">
+                     <h2 className="font-headline text-4xl mb-8 italic" style={{color: colors.onSurface}}>ما وراء الغرزة...</h2>
+                     <p className="text-lg leading-relaxed mb-6" style={{color: colors.onSurfaceVariant}}>
+                        بدأ متجر الكروشيه كحلم بسيط، محوره تقدير العمل اليدوي والجمال الهادئ. نحن نؤمن أن الخيوط ليست مجرد مادة خام، بل هي وسيلة للتعبير عن المشاعر وتجميل المساحات.
+                     </p>
+                     <ul className="space-y-4 mt-8">
+                        <li className="flex items-center gap-3 font-bold" style={{color: colors.secondary}}>
+                          <i className="fa-solid fa-check-circle text-xl"></i> صناعة يدوية 100% بكل فخر
+                        </li>
+                        <li className="flex items-center gap-3 font-bold" style={{color: colors.secondary}}>
+                          <i className="fa-solid fa-leaf text-xl"></i> مواد صديقة للبيئة وخيوط طبيعية
+                        </li>
+                        <li className="flex items-center gap-3 font-bold" style={{color: colors.secondary}}>
+                          <i className="fa-solid fa-pen-nib text-xl"></i> إمكانية التخصيص حسب طلبك
+                        </li>
+                     </ul>
+                   </div>
 
-      function updateFileName() {
-        fileName.textContent = fileInput.files.length ? `الصورة المختارة: ${fileInput.files[0].name}` : 'لم يتم اختيار أي صورة بعد.';
-      }
+                   <div className="w-full md:w-1/2 relative z-10">
+                     <div className="rounded-[2rem] overflow-hidden h-[450px] shadow-lg">
+                       <img className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBWoWmClUOMYGcw94G5TCHEqZ4mH238jOCliQ1ZcmPRWBFCVEfCYxF8UarOlGTjBjSGEsiqLGOkkMjOdaKpsVp4xbthsN3nFohjhSu31R_s0EAYYOgqKUO-z3HHIs3MVLUInZpcxSrIqM4Tzc-H9Obh-vjK6oxajmF7Nvt38oPgDOG86DwoctemNBbpZxBdfA4nZYPMOJMMzX27m7gT35QZodDSJMfk7uR17WQwH8ZHGqbBCbnPPvxx3qGqKS_UICkigMauU0snGps0" alt="Knitting"/>
+                     </div>
+                   </div>
+                </div>
+              </div>
+            </section>
 
-      function saveDraft() {
-        const draft = Object.fromEntries(formFields.filter((field) => field.type !== 'file').map((field) => [field.name, field.value]));
-        localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-      }
+            {/* Categories Bento Grid */}
+            <section id="collections" className="py-24 relative">
+              <div className="absolute inset-0 asymmetric-grain -z-10 opacity-50"></div>
+              <div className="max-w-7xl mx-auto px-6">
+                <div className="text-center mb-16">
+                  <h2 className="font-headline text-4xl mb-4" style={{color: colors.onSurface}}>اكتشف عالمنا المنسوج</h2>
+                  <p className="max-w-2xl mx-auto" style={{color: colors.onSurfaceVariant}}>تصفح أقسامنا المتنوعة المختارة بعناية لتناسب ذوقك واحتياجاتك</p>
+                </div>
 
-      function loadDraft() {
-        const rawDraft = localStorage.getItem(DRAFT_KEY);
-        if (!rawDraft) {
-          return;
-        }
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-6 h-auto md:h-[700px]">
+                  
+                  {/* Category 1 (Large) */}
+                  <div onClick={() => { setActiveCategory(storeData.categories[0]); navigateTo('category'); }} className="md:col-span-8 group relative overflow-hidden rounded-[2rem] cursor-pointer" style={{backgroundColor: colors.surfaceHigh}}>
+                    <img src={storeData.categories[0].img} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Amigurumi" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#34322f]/80 via-transparent to-transparent"></div>
+                    <div className="absolute bottom-8 right-8 text-white">
+                      <h3 className="font-headline text-3xl mb-2">{storeData.categories[0].name}</h3>
+                      <p className="mb-6 opacity-90">{storeData.categories[0].desc}</p>
+                      <span className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md px-6 py-2.5 rounded-full font-bold">تسوق الآن <i className="fa-solid fa-arrow-left"></i></span>
+                    </div>
+                  </div>
 
-        try {
-          const draft = JSON.parse(rawDraft);
-          formFields.forEach((field) => {
-            if (field.type !== 'file' && typeof draft[field.name] === 'string') {
-              field.value = draft[field.name];
-            }
-          });
-          showStatus('تمت استعادة آخر مسودة طلب محفوظة على هذا الجهاز.', 'success');
-        } catch {
-          localStorage.removeItem(DRAFT_KEY);
-        }
-      }
+                  {/* Category 2 (Small) */}
+                  <div onClick={() => { setActiveCategory(storeData.categories[1]); navigateTo('category'); }} className="md:col-span-4 group relative overflow-hidden rounded-[2rem] cursor-pointer" style={{backgroundColor: colors.surfaceHigh}}>
+                    <img src={storeData.categories[1].img} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Accessories" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#34322f]/80 via-transparent to-transparent"></div>
+                    <div className="absolute bottom-8 right-8 text-white">
+                      <h3 className="font-headline text-2xl mb-4">{storeData.categories[1].name}</h3>
+                      <span className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md px-5 py-2 rounded-full text-sm font-bold">عرض المزيد</span>
+                    </div>
+                  </div>
 
-      function clearDraft() {
-        localStorage.removeItem(DRAFT_KEY);
-        form.reset();
-        renderCategoryOptions();
-        updateFileName();
-        statusBox.className = 'mt-6 hidden rounded-[1.5rem] px-4 py-3 text-sm font-bold';
-      }
+                  {/* Category 3 (Small) */}
+                  <div onClick={() => { setActiveCategory(storeData.categories[2]); navigateTo('category'); }} className="md:col-span-4 group relative overflow-hidden rounded-[2rem] cursor-pointer" style={{backgroundColor: colors.surfaceHigh}}>
+                    <img src={storeData.categories[2].img} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Clothes" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#34322f]/80 via-transparent to-transparent"></div>
+                    <div className="absolute bottom-8 right-8 text-white">
+                      <h3 className="font-headline text-2xl mb-4">{storeData.categories[2].name}</h3>
+                      <span className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md px-5 py-2 rounded-full text-sm font-bold">عرض المزيد</span>
+                    </div>
+                  </div>
 
-      function updateOwnerPanelVisibility() {
-        const isOpen = localStorage.getItem(OWNER_SESSION_KEY) === 'open';
-        ownerPanel.classList.toggle('hidden', !isOpen);
-        if (isOpen) {
-          renderOwnerOrders();
-          renderOwnerProducts();
-          firebaseKeyInput.value = localStorage.getItem(FIREBASE_KEY_STORAGE) || '';
-        }
-      }
+                  {/* Category 4 (Large) */}
+                  <div onClick={() => { setActiveCategory(storeData.categories[3]); navigateTo('category'); }} className="md:col-span-8 group relative overflow-hidden rounded-[2rem] cursor-pointer" style={{backgroundColor: colors.surfaceHigh}}>
+                    <img src={storeData.categories[3].img} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Decor" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#34322f]/80 via-transparent to-transparent"></div>
+                    <div className="absolute bottom-8 right-8 text-white">
+                      <h3 className="font-headline text-3xl mb-2">{storeData.categories[3].name}</h3>
+                      <p className="mb-6 opacity-90">{storeData.categories[3].desc}</p>
+                      <span className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md px-6 py-2.5 rounded-full font-bold">تسوق الآن <i className="fa-solid fa-arrow-left"></i></span>
+                    </div>
+                  </div>
 
-      function openOwnerModal() {
-        ownerModal.classList.remove('hidden');
-        ownerModal.classList.add('flex');
-        ownerPasscodeInput.focus();
-      }
+                </div>
+              </div>
+            </section>
 
-      function closeOwnerModal() {
-        ownerModal.classList.add('hidden');
-        ownerModal.classList.remove('flex');
-        ownerLoginForm.reset();
-        ownerLoginStatus.textContent = 'اضغطي مرتين على الشعار الصغير لفتح هذه النافذة.';
-      }
+            {/* Featured Products */}
+            <section className="py-24" style={{backgroundColor: '#f2ede9'}}>
+              <div className="max-w-7xl mx-auto px-6">
+                <div className="flex justify-between items-end mb-12">
+                  <div>
+                    <h2 className="font-headline text-4xl mb-2" style={{color: colors.onSurface}}>الأكثر طلباً</h2>
+                    <p style={{color: colors.onSurfaceVariant}}>قطع مميزة نالت إعجاب عملائنا</p>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                  {storeData.products.slice(0, 4).map(prod => (
+                    <div key={prod.id} className="group">
+                      <div className="bg-white rounded-[2rem] overflow-hidden mb-6 aspect-[4/5] relative soft-shadow border border-white">
+                        <img src={prod.image} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt={prod.name} />
+                        <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm p-2 rounded-full text-sm font-bold shadow-sm" style={{color: colors.primary}}>
+                           {prod.categoryName || 'مميز'}
+                        </div>
+                      </div>
+                      <h4 className="font-headline text-lg font-bold mb-1" style={{color: colors.onSurface}}>{prod.name}</h4>
+                      <p className="font-bold text-lg mb-4" style={{color: colors.secondary}}>{prod.price}</p>
+                      <button onClick={() => { setSelectedProduct(prod.name); navigateTo('order'); }} className="w-full py-3.5 rounded-full text-white font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity" style={{backgroundColor: colors.primary}}>
+                        <i className="fa-solid fa-cart-plus"></i> أطلب الآن
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
 
-      ownerLogoButton.addEventListener('dblclick', openOwnerModal);
-      closeOwnerModalButton.addEventListener('click', closeOwnerModal);
-      ownerLogoutButton.addEventListener('click', () => {
-        localStorage.removeItem(OWNER_SESSION_KEY);
-        updateOwnerPanelVisibility();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      });
+          </div>
+        )}
 
-      ownerLoginForm.addEventListener('submit', (event) => {
-        event.preventDefault();
-        if (ownerPasscodeInput.value.trim() !== OWNER_PASSCODE) {
-          ownerLoginStatus.textContent = 'الرقم السري غير صحيح. استخدمي 11020.';
-          ownerLoginStatus.className = 'text-sm text-red-600';
-          return;
-        }
 
-        localStorage.setItem(OWNER_SESSION_KEY, 'open');
-        closeOwnerModal();
-        updateOwnerPanelVisibility();
-        ownerPanel.scrollIntoView({ behavior: 'smooth' });
-      });
+        {/* ==================== CATEGORY VIEW ==================== */}
+        {view === 'category' && activeCategory && (
+          <div className="animate-[fadeIn_0.4s_ease-out] py-16 px-6 max-w-7xl mx-auto">
+            <button onClick={() => navigateTo('home')} className="flex items-center gap-2 font-bold mb-10 opacity-70 hover:opacity-100 transition-opacity" style={{color: colors.secondary}}>
+              <i className="fa-solid fa-arrow-right"></i> العودة للرئيسية
+            </button>
+            
+            <div className="bg-white rounded-[3rem] p-10 mb-16 flex flex-col md:flex-row items-center gap-10 soft-shadow border border-[#f8f3ef]">
+               <div className="w-full md:w-1/3 aspect-square rounded-[2rem] overflow-hidden">
+                 <img src={activeCategory.img} className="w-full h-full object-cover" alt={activeCategory.name} />
+               </div>
+               <div className="w-full md:w-2/3">
+                 <h1 className="font-headline text-5xl mb-4" style={{color: colors.primary}}>{activeCategory.name}</h1>
+                 <p className="text-xl leading-relaxed" style={{color: colors.onSurfaceVariant}}>{activeCategory.desc}. تصفح مجموعتنا الحصرية واطلب ما يناسب ذوقك الرفيع.</p>
+               </div>
+            </div>
 
-      saveFirebaseKeyButton.addEventListener('click', () => {
-        localStorage.setItem(FIREBASE_KEY_STORAGE, firebaseKeyInput.value.trim());
-        firebaseKeyStatus.textContent = firebaseKeyInput.value.trim()
-          ? 'تم حفظ مفتاح Firebase محلياً على هذا الجهاز.'
-          : 'تم مسح قيمة المفتاح من التخزين المحلي.';
-      });
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+              {storeData.products.filter(p => p.categoryId === activeCategory.id).length === 0 ? (
+                 <div className="col-span-full py-20 text-center bg-white rounded-[2rem]">
+                    <i className="fa-solid fa-box-open text-6xl text-gray-200 mb-4"></i>
+                    <p className="text-xl font-bold text-gray-400">لا توجد منتجات حالياً، ولكن يمكنك طلب تصميم خاص!</p>
+                 </div>
+              ) : (
+                storeData.products.filter(p => p.categoryId === activeCategory.id).map(prod => (
+                  <div key={prod.id} className="group">
+                    <div className="bg-white rounded-[2rem] overflow-hidden mb-6 aspect-[4/5] relative soft-shadow">
+                      <img src={prod.image} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt={prod.name} />
+                    </div>
+                    <h4 className="font-headline text-lg font-bold mb-1" style={{color: colors.onSurface}}>{prod.name}</h4>
+                    <p className="font-bold text-lg mb-4" style={{color: colors.secondary}}>{prod.price}</p>
+                    <button onClick={() => { setSelectedProduct(prod.name); navigateTo('order'); }} className="w-full py-3.5 rounded-full font-bold flex items-center justify-center gap-2 hover:bg-opacity-90 transition-all" style={{backgroundColor: colors.surfaceHigh, color: colors.primary}}>
+                      أطلب الآن
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
 
-      ownerProductForm.addEventListener('submit', (event) => {
-        event.preventDefault();
-        const data = new FormData(ownerProductForm);
-        const categoryLabel = data.get('category').trim();
-        const categoryId = slugifyCategory(categoryLabel);
-        const customIdeas = data
-          .get('customIdeas')
-          .split('\n')
-          .map((item) => item.trim())
-          .filter(Boolean);
+        {/* ==================== ORDER / CUSTOM DESIGN VIEW ==================== */}
+        {view === 'order' && (
+          <div className="animate-[fadeIn_0.4s_ease-out] py-16 px-6 max-w-3xl mx-auto">
+            <button onClick={() => navigateTo('home')} className="flex items-center gap-2 font-bold mb-10 opacity-70 hover:opacity-100 transition-opacity" style={{color: colors.secondary}}>
+              <i className="fa-solid fa-arrow-right"></i> العودة
+            </button>
 
-        const product = {
-          id: crypto.randomUUID(),
-          categoryId,
-          categoryLabel,
-          name: data.get('name').trim(),
-          details: data.get('details').trim(),
-          price: data.get('price').trim(),
-          image: data.get('image').trim() || DEFAULT_IMAGE,
-          customIdeas
-        };
+            <div className="bg-white rounded-[3rem] p-10 md:p-14 soft-shadow border border-[#f8f3ef] relative overflow-hidden">
+               <div className="absolute top-0 left-0 w-full h-3" style={{backgroundColor: colors.primaryContainer}}></div>
+               
+               <h1 className="font-headline text-4xl mb-4 text-center" style={{color: colors.onSurface}}>
+                 {selectedProduct ? 'إتمام طلبك' : 'تصميم قطعة مخصصة'}
+               </h1>
+               <p className="text-center mb-10" style={{color: colors.onSurfaceVariant}}>
+                 املأ التفاصيل أدناه وسنقوم بالتواصل معك لتأكيد الطلب والبدء في الحياكة.
+               </p>
 
-        products.push(product);
-        saveProducts();
-        activeCategoryId = categoryId;
-        renderStorefront();
-        renderOwnerProducts();
-        ownerProductForm.reset();
-        ownerFormStatus.textContent = 'تمت إضافة المنتج والفئة بنجاح وظهرا مباشرة في واجهة الزبون.';
-      });
+               {selectedProduct && (
+                 <div className="mb-8 p-6 rounded-2xl flex items-center gap-4" style={{backgroundColor: colors.surfaceLow}}>
+                   <div className="w-14 h-14 rounded-full flex items-center justify-center bg-white shadow-sm text-2xl" style={{color: colors.secondary}}>
+                     <i className="fa-solid fa-bag-shopping"></i>
+                   </div>
+                   <div>
+                     <p className="text-sm font-bold opacity-70">المنتج المختار:</p>
+                     <p className="text-xl font-headline font-bold">{selectedProduct}</p>
+                   </div>
+                 </div>
+               )}
 
-      fileInput.addEventListener('change', () => {
-        updateFileName();
-        saveDraft();
-      });
+               <form onSubmit={submitOrder} className="space-y-6">
+                 <div>
+                   <label className="block font-bold mb-2 text-sm" style={{color: colors.secondary}}>الاسم الكامل</label>
+                   <input type="text" name="name" required className="w-full px-5 py-4 rounded-xl outline-none transition-all" style={{backgroundColor: colors.surfaceHigh, border: `2px solid transparent`}} onFocus={(e) => e.target.style.borderColor = colors.primaryContainer} onBlur={(e) => e.target.style.borderColor = 'transparent'} placeholder="أدخل اسمك الكريم" />
+                 </div>
+                 <div>
+                   <label className="block font-bold mb-2 text-sm" style={{color: colors.secondary}}>رقم الهاتف للتواصل (يفضل واتساب)</label>
+                   <input type="tel" name="phone" required dir="ltr" className="w-full px-5 py-4 rounded-xl outline-none transition-all text-right font-bold tracking-widest" style={{backgroundColor: colors.surfaceHigh, border: `2px solid transparent`}} onFocus={(e) => e.target.style.borderColor = colors.primaryContainer} onBlur={(e) => e.target.style.borderColor = 'transparent'} placeholder="05XX XX XX XX" />
+                 </div>
+                 <div>
+                   <label className="block font-bold mb-2 text-sm" style={{color: colors.secondary}}>ملاحظات أو تفاصيل التصميم {selectedProduct && '(اختياري)'}</label>
+                   <textarea name="notes" rows="5" required={!selectedProduct} className="w-full px-5 py-4 rounded-xl outline-none transition-all resize-none leading-relaxed" style={{backgroundColor: colors.surfaceHigh, border: `2px solid transparent`}} onFocus={(e) => e.target.style.borderColor = colors.primaryContainer} onBlur={(e) => e.target.style.borderColor = 'transparent'} placeholder={selectedProduct ? "أي تعديلات على الألوان أو المقاسات..." : "صِف لنا القطعة التي تحلم بها بالتفصيل..."}></textarea>
+                 </div>
+                 <div className="pt-4">
+                   <button type="submit" className="w-full py-4 rounded-xl font-bold text-white text-lg shadow-lg hover:-translate-y-1 transition-transform" style={{backgroundColor: colors.primary}}>
+                     تأكيد وإرسال الطلب
+                   </button>
+                 </div>
+               </form>
+            </div>
+          </div>
+        )}
 
-      formFields.forEach((field) => {
-        field.addEventListener('input', saveDraft);
-        field.addEventListener('change', saveDraft);
-      });
+        {/* ==================== ADMIN VIEW ==================== */}
+        {view === 'admin' && (
+          <div className="animate-[fadeIn_0.4s_ease-out] py-12 px-6 max-w-7xl mx-auto">
+            
+            <div className="bg-[#1a1c1a] text-[#ece7e3] p-10 rounded-[3rem] shadow-2xl mb-12 flex flex-col md:flex-row justify-between items-center gap-6 relative overflow-hidden">
+               <div className="absolute right-0 top-0 w-64 h-64 bg-[#44674d] rounded-full blur-[80px] opacity-20 pointer-events-none"></div>
+               <div className="relative z-10 flex items-center gap-6">
+                 <div className="w-16 h-16 bg-[#44674d] rounded-2xl flex items-center justify-center text-white text-2xl shadow-lg">
+                   <i className="fa-solid fa-crown"></i>
+                 </div>
+                 <div>
+                   <h1 className="font-headline text-3xl font-bold mb-2">لوحة الإدارة</h1>
+                   <p className="opacity-70 font-medium">مرحباً هبة! من هنا يمكنك إدارة متجرك.</p>
+                 </div>
+               </div>
+               <button onClick={() => navigateTo('home')} className="relative z-10 px-8 py-3 rounded-xl font-bold bg-white/10 hover:bg-white/20 transition-colors">
+                 تسجيل الخروج
+               </button>
+            </div>
 
-      clearDraftButton.addEventListener('click', clearDraft);
+            <div className="flex gap-4 mb-8">
+              <button onClick={() => setAdminTab('orders')} className={`px-8 py-3 rounded-2xl font-bold transition-all ${adminTab === 'orders' ? 'bg-white soft-shadow' : 'opacity-60 hover:opacity-100'}`} style={{color: adminTab === 'orders' ? colors.primary : colors.onSurface}}>
+                الطلبات <span className="bg-red-500 text-white px-2 py-0.5 rounded-full text-xs mr-2">{storeData.orders.length}</span>
+              </button>
+              <button onClick={() => setAdminTab('products')} className={`px-8 py-3 rounded-2xl font-bold transition-all ${adminTab === 'products' ? 'bg-white soft-shadow' : 'opacity-60 hover:opacity-100'}`} style={{color: adminTab === 'products' ? colors.primary : colors.onSurface}}>
+                المنتجات والأقسام
+              </button>
+            </div>
 
-      form.addEventListener('submit', (event) => {
-        event.preventDefault();
-        const formData = new FormData(form);
-        const payload = {
-          id: crypto.randomUUID(),
-          firstName: formData.get('firstName').trim(),
-          lastName: formData.get('lastName').trim(),
-          phone: formData.get('phone').trim(),
-          category: formData.get('category').trim(),
-          details: formData.get('details').trim(),
-          referenceImage: fileInput.files.length ? fileInput.files[0].name : '',
-          createdAt: new Date().toLocaleString('ar-EG')
-        };
+            {/* Admin: Orders Tab */}
+            {adminTab === 'orders' && (
+              <div className="grid gap-6">
+                {storeData.orders.length === 0 ? (
+                  <div className="bg-white rounded-[3rem] p-20 text-center border border-[#f8f3ef]">
+                    <p className="text-xl font-bold opacity-50">لا توجد طلبات جديدة.</p>
+                  </div>
+                ) : (
+                  storeData.orders.map(order => (
+                    <div key={order.id} className="bg-white rounded-[2rem] p-8 soft-shadow border border-[#f8f3ef] flex flex-col md:flex-row gap-8 justify-between items-start">
+                      <div className="flex-grow space-y-4">
+                        <div className="flex items-center gap-4 border-b border-gray-100 pb-4">
+                          <span className="bg-[#c5eccc]/30 text-[#375941] px-3 py-1 rounded-lg text-sm font-bold">{order.type}</span>
+                          <span className="text-gray-400 text-sm font-medium">{order.date}</span>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500 mb-1">اسم الزبون:</p>
+                          <p className="text-2xl font-bold font-headline">{order.customerName}</p>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="bg-[#fdf8f5] p-4 rounded-xl">
+                            <p className="text-xs text-gray-500 mb-1">المنتج / التصميم:</p>
+                            <p className="font-bold">{order.productName}</p>
+                          </div>
+                          <div className="bg-[#fdf8f5] p-4 rounded-xl">
+                            <p className="text-xs text-gray-500 mb-1">الهاتف:</p>
+                            <p className="font-bold dir-ltr text-right">{order.phone}</p>
+                          </div>
+                        </div>
+                        <div className="bg-[#f8f3ef] p-5 rounded-xl border border-[#e7e2dd]">
+                          <p className="text-xs font-bold text-[#7e572e] mb-2">الملاحظات:</p>
+                          <p className="leading-relaxed text-sm">{order.notes || 'لا توجد.'}</p>
+                        </div>
+                      </div>
+                      <div className="flex md:flex-col gap-3 w-full md:w-auto">
+                         <a href={`https://wa.me/${order.phone.replace(/[^0-9]/g, '')}`} target="_blank" className="flex-1 text-center bg-green-500 text-white px-6 py-3 rounded-xl font-bold hover:bg-green-600 transition">
+                           واتساب
+                         </a>
+                         <button onClick={() => {
+                           if(window.confirm('حذف الطلب نهائياً؟')) {
+                             setStoreData(prev => ({...prev, orders: prev.orders.filter(o => o.id !== order.id)}));
+                           }
+                         }} className="flex-1 text-center bg-red-50 text-red-600 px-6 py-3 rounded-xl font-bold hover:bg-red-100 transition">
+                           حذف
+                         </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
 
-        if (!payload.firstName || !payload.lastName || !payload.phone || !payload.details) {
-          showStatus('يرجى ملء الاسم واللقب ورقم الهاتف ووصف الطلب قبل الإرسال.', 'warning');
-          return;
-        }
+            {/* Admin: Products Tab (Placeholder for Future Expansion) */}
+            {adminTab === 'products' && (
+              <div className="bg-white rounded-[3rem] p-12 text-center border border-[#f8f3ef]">
+                 <i className="fa-solid fa-code text-6xl text-gray-200 mb-6"></i>
+                 <h2 className="text-2xl font-headline font-bold mb-2">إدارة المنتجات</h2>
+                 <p className="text-gray-500">تم تجهيز هذه الواجهة ليتم ربطها برمجياً لرفع وتعديل الصور والأسعار مستقبلاً.</p>
+              </div>
+            )}
 
-        orders.push(payload);
-        saveOrders();
-        renderOwnerOrders();
-        showStatus('تم حفظ الطلب بنجاح داخل واجهة صاحب المشروع على هذا الجهاز.', 'success');
-        localStorage.removeItem(DRAFT_KEY);
-        form.reset();
-        updateFileName();
-        renderCategoryOptions();
-      });
+          </div>
+        )}
 
-      updateFileName();
-      renderStorefront();
-      loadDraft();
-      updateOwnerPanelVisibility();
-    </script>
-  </body>
-</html>
+      </main>
+
+      {/* --- Footer --- */}
+      <footer className="rounded-t-[3rem] mt-20" style={{backgroundColor: '#f2ede9'}}>
+        <div className="max-w-7xl mx-auto px-12 py-16 flex flex-col md:flex-row justify-between items-center gap-10">
+          <div className="text-center md:text-right">
+            <h3 className="text-2xl font-headline font-bold mb-4" style={{color: colors.secondary}}>Knotique By Heba</h3>
+            <p className="text-sm max-w-xs opacity-70 leading-relaxed" style={{color: colors.onSurface}}>
+                نهتم بأدق التفاصيل لنقدم لكم قطعاً يدوية تلامس القلب وتزين حياتكم بالدفء.
+            </p>
+          </div>
+          <div className="flex gap-4">
+            <a href="https://www.instagram.com/_knotiqueee?igsh=Z2ljaGM2Y2NhY2F2" target="_blank" className="w-12 h-12 flex items-center justify-center rounded-full text-white text-xl transition-transform hover:-translate-y-1 shadow-md" style={{backgroundColor: colors.primary}}>
+              <i className="fa-brands fa-instagram"></i>
+            </a>
+          </div>
+        </div>
+      </footer>
+
+      {/* --- Admin Login Modal --- */}
+      {showAdminModal && (
+        <div className="fixed inset-0 bg-[#34322f]/40 backdrop-blur-sm z-[100] flex items-center justify-center px-4 animate-[fadeIn_0.2s_ease-out]">
+          <div className="bg-white p-10 rounded-[3rem] shadow-2xl max-w-sm w-full text-center">
+            <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6" style={{backgroundColor: colors.surfaceLow, color: colors.secondary}}>
+              <i className="fa-solid fa-key text-3xl"></i>
+            </div>
+            <h3 className="text-2xl font-headline font-bold mb-2">دخول المدير</h3>
+            <p className="text-sm text-gray-400 mb-8">أدخلي الرقم السري للمتابعة</p>
+            <form onSubmit={handleAdminLogin}>
+              <input 
+                type="password" 
+                value={adminPwd}
+                onChange={(e) => {setAdminPwd(e.target.value); setAdminError(false);}}
+                className="w-full px-5 py-4 rounded-xl outline-none mb-4 text-center tracking-[1em] text-xl font-black bg-gray-50 focus:bg-white border-2 border-transparent focus:border-[#44674d] transition-all" 
+                placeholder="•••••"
+                autoFocus
+              />
+              {adminError && <p className="text-red-500 text-sm font-bold mb-4">عذراً، الرقم غير صحيح.</p>}
+              <div className="flex gap-3">
+                <button type="submit" className="flex-[2] text-white py-4 rounded-xl font-bold shadow-lg hover:opacity-90 transition-opacity" style={{backgroundColor: colors.primary}}>تأكيد</button>
+                <button type="button" onClick={() => setShowAdminModal(false)} className="flex-1 bg-gray-100 text-gray-600 py-4 rounded-xl font-bold hover:bg-gray-200">إلغاء</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+}
